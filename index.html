@@ -2,182 +2,687 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transforma a Tua Vida em 7 Dias | Transformação Real</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>EUT | Transforma a Tua Vida em 7 Dias</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    .whatsapp-float {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
-      background-color: #25d366;
-      color: white;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+    
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #0a0a0a; overflow-x: hidden; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+      50% { box-shadow: 0 0 25px rgba(212, 175, 55, 0.6); }
+      100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.3); }
+    }
+    @keyframes countdownPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    .animate-fadeInUp { animation: fadeInUp 0.8s ease-out forwards; }
+    .btn-glow { animation: glowPulse 2s infinite; }
+    .countdown-timer {
+      animation: countdownPulse 1s infinite;
+    }
+    
+    .navbar {
+      backdrop-filter: blur(12px);
+      background: rgba(10, 10, 10, 0.8);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    }
+    
+    .quiz-step { display: none; opacity: 0; transition: opacity 0.5s ease; }
+    .quiz-step.active { display: block; animation: fadeInUp 0.6s ease-out forwards; }
+    
+    .option-card {
+      transition: all 0.3s ease;
+      border: 1.5px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+      cursor: pointer;
+    }
+    .option-card:hover {
+      border-color: #d4af37;
+      background: rgba(212, 175, 55, 0.1);
+      transform: translateX(8px);
+    }
+    
+    .progress-fill { transition: width 0.5s ease; }
+    
+    .loading-dots span {
+      animation: blink 1.4s infinite both;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+    
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      background: rgba(212, 175, 55, 0.4);
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      animation: float 8s infinite ease-in-out;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+      50% { opacity: 0.6; }
+    }
+    
+    input, textarea {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.3s ease;
+    }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #d4af37;
+      background: rgba(255,255,255,0.08);
+    }
+    
+    .radar-container {
+      background: rgba(0,0,0,0.5);
+      border-radius: 20px;
+      padding: 20px;
+    }
+    
+    .analyzing-center {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 30px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      transition: all 0.3s ease;
-      z-index: 1000;
-      text-decoration: none;
+      flex-direction: column;
     }
-    .whatsapp-float:hover {
-      transform: scale(1.1);
-      background-color: #20b359;
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
     }
-    @media (max-width: 768px) {
-      .whatsapp-float {
-        width: 50px;
-        height: 50px;
-        font-size: 25px;
-        bottom: 20px;
-        right: 20px;
-      }
+    .modal-content {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 24px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 30px;
+      position: relative;
+      animation: fadeInUp 0.4s ease-out;
     }
+    .modal-close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #d4af37;
+      transition: all 0.3s;
+    }
+    .modal-close:hover { transform: scale(1.1); }
+    .modal-content h2 { color: #d4af37; font-size: 24px; margin-bottom: 20px; }
+    .modal-content p { color: #ccc; line-height: 1.6; margin-bottom: 12px; font-size: 14px; }
+    .modal-content h3 { color: #d4af37; font-size: 18px; margin-top: 15px; margin-bottom: 10px; }
+    
+    .timer-circle {
+      background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.05));
+      border: 2px solid #d4af37;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px auto;
+    }
+    
+    html { scroll-behavior: smooth; }
   </style>
 </head>
-<body class="bg-black text-white font-sans">
+<body class="bg-black text-white">
+
+<!-- MODAIS DAS POLÍTICAS -->
+<div id="modalPrivacidade" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('modalPrivacidade')">&times;</span>
+    <h2>Política de Privacidade</h2>
+    <p>A EUT - Transformação Real respeita a tua privacidade e está comprometida em proteger os teus dados pessoais.</p>
+    <h3>1. Dados recolhidos:</h3>
+    <p>Recolhemos nome, email e WhatsApp para processar a tua compra e enviar o acesso ao produto.</p>
+    <h3>2. Uso dos dados:</h3>
+    <p>As tuas informações são usadas exclusivamente para entrega do produto, suporte e comunicações relacionadas.</p>
+    <h3>3. Proteção:</h3>
+    <p>Utilizamos tecnologia de encriptação e não partilhamos os teus dados com terceiros.</p>
+    <h3>4. Cookies:</h3>
+    <p>O site utiliza cookies apenas para melhorar a experiência de navegação.</p>
+    <h3>5. Direitos:</h3>
+    <p>Podes solicitar a remoção dos teus dados a qualquer momento através do nosso suporte.</p>
+    <p class="text-gray-500 text-xs mt-4">Última atualização: Maio 2026</p>
+  </div>
+</div>
+
+<div id="modalTermos" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('modalTermos')">&times;</span>
+    <h2>Termos de Uso</h2>
+    <h3>1. Produto Digital:</h3>
+    <p>O guia "Transforma a Tua Vida em 7 Dias" é um produto digital com acesso imediato após a confirmação do pagamento.</p>
+    <h3>2. Direitos Autorais:</h3>
+    <p>Todo o conteúdo é protegido por direitos de autor. Não é permitida reprodução, distribuição ou revenda.</p>
+    <h3>3. Uso Pessoal:</h3>
+    <p>A licença de uso é pessoal e intransferível, destinada apenas ao comprador original.</p>
+    <h3>4. Resultados:</h3>
+    <p>Os resultados variam de pessoa para pessoa e dependem da aplicação individual do conteúdo.</p>
+    <h3>5. Modificações:</h3>
+    <p>Reservamo-nos o direito de atualizar estes termos a qualquer momento.</p>
+  </div>
+</div>
+
+<div id="modalReembolso" class="modal">
+  <div class="modal-content">
+    <span class="modal-close" onclick="closeModal('modalReembolso')">&times;</span>
+    <h2>Política de Reembolso</h2>
+    <h3>Garantia de 7 Dias:</h3>
+    <p>Se dentro de 7 dias corridos após a compra entenderes que o produto não atendeu às tuas expectativas, podes solicitar o reembolso integral.</p>
+    <h3>Como solicitar:</h3>
+    <p>Envia um email para: <strong>suporte.transformacao7dias@gmail.com</strong> com o assunto "Reembolso" e os dados da tua transação.</p>
+    <h3>Prazo:</h3>
+    <p>Após a validação, o reembolso é processado em até 10 dias úteis.</p>
+    <h3>Condições:</h3>
+    <p>O reembolso só é aplicado a compras realizadas através do nosso checkou.</p>
+    <h3>Produto digital:</h3>
+    <p>Após o reembolso, o acesso ao produto será revogado imediatamente.</p>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar fixed top-0 w-full z-50 py-4 px-6">
+  <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-gradient-to-br from-yellow-600 to-yellow-400 rounded-xl flex items-center justify-center">
+        <span class="text-black font-bold text-xl">EUT</span>
+      </div>
+      <div>
+        <p class="font-bold text-white text-lg">EUT</p>
+        <p class="text-xs text-yellow-500">Clareza. Disciplina. Evolução.</p>
+      </div>
+    </div>
+    <div class="hidden md:flex gap-6 text-sm text-gray-300">
+      <a href="#hero" class="hover:text-yellow-500 transition">Início</a>
+      <a href="#quizSection" class="hover:text-yellow-500 transition">Diagnóstico</a>
+      <a href="#garantia" class="hover:text-yellow-500 transition">Garantia</a>
+      <a href="#contato" class="hover:text-yellow-500 transition">Contacto</a>
+    </div>
+  </div>
+</nav>
 
 <!-- HERO -->
-<section class="min-h-screen flex flex-col justify-center items-center text-center px-6" style="background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.95)), url('https://i.postimg.cc/d0TQd76B/TRANSFORMACAO.jpg') center/cover no-repeat;">
-  <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-    TRANSFORMA A TUA VIDA<br>
-    <span class="text-yellow-400">EM 7 DIAS</span>
-  </h1>
-  <p class="text-lg md:text-xl mb-8 max-w-xl text-gray-300">
-    Sistema prático para jovens que querem sair do zero, ganhar disciplina e começar a ter resultados reais.
-  </p>
-  <a href="#comprar">
-    <button class="bg-yellow-400 text-black px-8 py-4 text-xl font-bold rounded-2xl shadow-lg hover:scale-105 transition">
-      COMEÇAR AGORA
-    </button>
-  </a>
-</section>
-
-<!-- PROBLEMA -->
-<section class="p-10 text-center bg-gray-900">
-  <h2 class="text-3xl font-bold mb-6">Se identificas com isto, este guia é para ti:</h2>
-  <div class="max-w-xl mx-auto space-y-3 text-gray-300">
-    <p>❌ Falta de disciplina</p>
-    <p>❌ Sem direção clara</p>
-    <p>❌ Falta de resultados</p>
-    <p>❌ Procrastinação constante</p>
-  </div>
-</section>
-
-<!-- SOLUÇÃO -->
-<section class="p-10 text-center">
-  <h2 class="text-3xl font-bold mb-6">A solução</h2>
-  <p class="max-w-2xl mx-auto text-gray-300 mb-6">
-    Um guia direto ao ponto com um plano de 7 dias para mudar tua mentalidade, hábitos e ações.
-  </p>
-  <img src="https://i.postimg.cc/d0TQd76B/TRANSFORMACAO.jpg" class="mx-auto w-72 rounded-2xl shadow-2xl">
-</section>
-
-<!-- BENEFÍCIOS -->
-<section class="p-10 bg-gray-900">
-  <h2 class="text-3xl font-bold text-center mb-8">O que vais aprender:</h2>
-  <div class="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto text-gray-300">
-    <p>✔ Criar hábitos fortes</p>
-    <p>✔ Ter disciplina diária</p>
-    <p>✔ Mentalidade de crescimento</p>
-    <p>✔ Plano de ação claro</p>
-  </div>
-</section>
-
-<!-- OFERTA -->
-<section id="comprar" class="p-10 text-center">
-  <h2 class="text-4xl font-extrabold mb-4 text-yellow-400">OFERTA LIMITADA</h2>
-  <div class="text-red-500 text-2xl font-bold mb-4" id="timer">
-    Oferta expira em: 30:00
-  </div>
-  <p class="text-xl mb-4">De <span class="line-through text-red-500">500 MZN</span></p>
-  <p class="text-5xl font-bold mb-6">197 MZN</p>
-  <p class="mb-6 text-gray-300">Pagamento único • Acesso imediato</p>
+<section id="hero" class="min-h-screen flex flex-col justify-center items-center text-center px-6 relative overflow-hidden pt-20">
+  <div class="particles" id="particles"></div>
+  <div class="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black opacity-90"></div>
+  <div class="absolute top-20 left-10 w-72 h-72 bg-yellow-500/10 rounded-full blur-3xl"></div>
+  <div class="absolute bottom-20 right-10 w-96 h-96 bg-yellow-600/5 rounded-full blur-3xl"></div>
   
-  <!-- === URL DE CHECKOUT MANTIDA IGUAL À ORIGINAL === -->
-  <a href="https://wa.me/message/STBYFUNKBU67G1">
-    <button class="bg-yellow-400 text-black px-10 py-5 text-2xl font-bold rounded-2xl shadow-lg hover:scale-105 transition">
-      OBTER ACESSO AGORA
+  <div class="relative z-10 max-w-4xl mx-auto animate-fadeInUp">
+    <div class="mb-8">
+      <span class="text-yellow-500 text-sm tracking-wider uppercase border border-yellow-500/30 px-4 py-2 rounded-full">Análise Comportamental Avançada</span>
+    </div>
+    <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight">
+      Talvez o problema<br>
+      <span class="text-yellow-500">não seja falta de dinheiro...</span>
+    </h1>
+    <p class="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+      Responde algumas perguntas rápidas e descobre o que realmente está te travando.
+    </p>
+    <button id="startQuizBtn" class="bg-yellow-500 text-black px-10 py-4 text-lg font-bold rounded-full shadow-2xl hover:scale-105 transition-all duration-300 flex items-center gap-2 mx-auto btn-glow">
+      COMEÇAR DIAGNÓSTICO <i class="fas fa-arrow-right"></i>
     </button>
-  </a>
-  <p class="text-xs text-gray-500 mt-3">🔒 Ambiente de pagamento seguro • Checkout verificado</p>
+  </div>
 </section>
 
-<!-- CONFIANÇA -->
-<section class="p-10 bg-gray-900 text-center">
-  <h2 class="text-2xl font-bold mb-4">Compra Segura</h2>
-  <p class="text-gray-300">Pagamento seguro • Entrega imediata • Produto digital</p>
+<!-- QUIZ -->
+<section id="quizSection" class="py-20 px-6 bg-gradient-to-b from-black to-gray-900 min-h-screen flex items-center" style="display: none;">
+  <div class="max-w-2xl mx-auto w-full">
+    <div class="mb-10">
+      <div class="flex justify-between text-sm text-gray-400 mb-2">
+        <span>Diagnóstico Profundo</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="h-1 bg-gray-800 rounded-full overflow-hidden">
+        <div id="progressFill" class="h-full bg-yellow-500 transition-all duration-500" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <div id="step1" class="quiz-step active">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">Qual destas situações <span class="text-yellow-500">mais parece tua vida</span> atualmente?</h3>
+      <div class="space-y-3">
+        <div class="option-card p-4 rounded-xl flex items-center gap-3" data-value="Começo motivado mas desisto rápido"><i class="fas fa-fire text-yellow-500"></i> Começo motivado mas desisto rápido</div>
+        <div class="option-card p-4 rounded-xl flex items-center gap-3" data-value="Tenho sonhos grandes mas pouca ação"><i class="fas fa-dreamcast text-yellow-500"></i> Tenho sonhos grandes mas pouca ação</div>
+        <div class="option-card p-4 rounded-xl flex items-center gap-3" data-value="Vejo outros evoluindo e sinto pressão"><i class="fas fa-users text-yellow-500"></i> Vejo outros evoluindo e sinto pressão</div>
+        <div class="option-card p-4 rounded-xl flex items-center gap-3" data-value="Sinto que estou desperdiçando meu potencial"><i class="fas fa-hourglass-half text-yellow-500"></i> Sinto que estou desperdiçando meu potencial</div>
+      </div>
+    </div>
+
+    <div id="step2" class="quiz-step">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">Quando chegas à noite e pensas na tua vida… <span class="text-yellow-500">qual sentimento aparece mais?</span></h3>
+      <div class="space-y-3">
+        <div class="option-card p-4 rounded-xl" data-value="Culpa">😔 Culpa</div>
+        <div class="option-card p-4 rounded-xl" data-value="Ansiedade">😰 Ansiedade</div>
+        <div class="option-card p-4 rounded-xl" data-value="Frustração">😤 Frustração</div>
+        <div class="option-card p-4 rounded-xl" data-value="Vazio">🕳️ Vazio</div>
+        <div class="option-card p-4 rounded-xl" data-value="Esperança">✨ Esperança</div>
+      </div>
+    </div>
+
+    <div id="step3" class="quiz-step">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">Imagina que daqui a 1 ano <span class="text-yellow-500">tudo continua igual…</span><br>Qual seria tua maior dor?</h3>
+      <div class="space-y-3">
+        <div class="option-card p-4 rounded-xl" data-value="Não ter começado">⏰ Não ter começado</div>
+        <div class="option-card p-4 rounded-xl" data-value="Continuar dependente">🏠 Continuar dependente</div>
+        <div class="option-card p-4 rounded-xl" data-value="Sentir-me atrasado">🐢 Sentir-me atrasado</div>
+        <div class="option-card p-4 rounded-xl" data-value="Perder mais tempo">⏳ Perder mais tempo</div>
+      </div>
+    </div>
+
+    <div id="step4" class="quiz-step">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">O que <span class="text-yellow-500">ninguém sabe</span> sobre o que estás passando?</h3>
+      <textarea id="secretAnswer" rows="4" placeholder="Escreve aqui com honestidade... ninguém vai julgar." class="w-full p-4 rounded-xl text-white placeholder-gray-500"></textarea>
+      <button id="submitSecretBtn" class="mt-6 bg-yellow-500 text-black px-8 py-3 rounded-full font-bold w-full hover:scale-105 transition">Continuar</button>
+    </div>
+
+    <div id="step5" class="quiz-step">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">Qual é o teu maior medo <span class="text-yellow-500">se continuares exatamente como estás hoje?</span></h3>
+      <textarea id="fearAnswer" rows="4" placeholder="Sê honesto... o que te assusta quando pensas no futuro?" class="w-full p-4 rounded-xl text-white placeholder-gray-500"></textarea>
+      <button id="submitFearBtn" class="mt-6 bg-yellow-500 text-black px-8 py-3 rounded-full font-bold w-full hover:scale-105 transition">Continuar</button>
+    </div>
+
+    <div id="step6" class="quiz-step">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">Se pudesses mudar <span class="text-yellow-500">UMA coisa</span> na tua vida hoje, o que seria?</h3>
+      <div class="space-y-3">
+        <div class="option-card p-4 rounded-xl" data-value="Minha mentalidade">🧠 Minha mentalidade</div>
+        <div class="option-card p-4 rounded-xl" data-value="Minha disciplina">⚡ Minha disciplina</div>
+        <div class="option-card p-4 rounded-xl" data-value="Minhas finanças">💰 Minhas finanças</div>
+        <div class="option-card p-4 rounded-xl" data-value="Minha autoconfiança">💪 Minha autoconfiança</div>
+      </div>
+    </div>
+
+    <div id="step7" class="quiz-step">
+      <h3 class="text-2xl md:text-3xl font-bold mb-8 text-center">O que mais te impediria de <span class="text-yellow-500">desistir nos próximos 30 dias?</span></h3>
+      <div class="space-y-3">
+        <div class="option-card p-4 rounded-xl" data-value="Um plano claro">🗺️ Um plano claro</div>
+        <div class="option-card p-4 rounded-xl" data-value="Acompanhamento">👥 Acompanhamento</div>
+        <div class="option-card p-4 rounded-xl" data-value="Resultados rápidos">📈 Resultados rápidos</div>
+        <div class="option-card p-4 rounded-xl" data-value="Compromisso público">📢 Compromisso público</div>
+      </div>
+    </div>
+
+    <div id="feedbackMessage" class="mt-8 p-6 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-center hidden">
+      <p id="feedbackText" class="text-yellow-300"></p>
+    </div>
+  </div>
 </section>
 
-<!-- POLÍTICA DE REEMBOLSO PROFISSIONAL -->
-<section class="p-10 text-gray-400 text-sm max-w-3xl mx-auto">
-  <h2 class="text-xl font-bold text-white mb-4">Política de Reembolso</h2>
-  <p class="leading-relaxed">
-<p>Na <strong>Transformação Real</strong>, prezamos pela satisfação dos nossos clientes e pela transparência no processo de compra.</p><br>
+<!-- TELA DE ANÁLISE CENTRAL -->
+<div id="analyzingScreen" class="analyzing-center" style="display: none;">
+  <div class="text-center">
+    <div class="w-20 h-20 border-4 border-yellow-500/30 border-t-yellow-500 rounded-full animate-spin mb-6 mx-auto"></div>
+    <h2 class="text-2xl md:text-3xl font-bold text-yellow-500 mb-4">A ANALISAR</h2>
+    <p class="text-gray-300 text-lg">A processar 147 padrões comportamentais...</p>
+    <div class="loading-dots flex gap-2 justify-center mt-4">
+      <span class="text-yellow-500 text-2xl">.</span><span class="text-yellow-500 text-2xl">.</span><span class="text-yellow-500 text-2xl">.</span>
+    </div>
+  </div>
+</div>
 
-<p>Caso o guia <strong>  “Transforma a Tua Vida em 7 Dias” </strong>não corresponda às suas expectativas, disponibilizamos a possibilidade de reembolso integral no prazo de até 7 (sete) dias corridos, contados a partir da data da compra.</p><br>
-
-<strong> 📌 Como solicitar o reembolso:</strong><br><br>
-
-Para iniciar o processo, o cliente deverá: <br><br>
-<ol>
-  <li>Enviar um e-mail para o nosso suporte.</li>
-  <li>Informar os dados da compra (nome, contacto e comprovativo de pagamento).</li>
-</ol><br><br>
-
-<p>Após a receção do pedido, a equipa realizará a análise e, sendo aprovado, o valor será reembolsado através do mesmo método de pagamento utilizado na compra, no prazo estipulado pelos serviços financeiros.</p><br>
-
-<strong>⚠️ Condições:</strong><br><br>
-<ul>
-  <li>O pedido deve ser feito dentro do prazo de 7 dias.</li>
-
-<li>O reembolso aplica-se apenas a compras realizadas no site oficial.</li>
-
-<li>Reservamo-nos o direito de recusar pedidos fora das condições acima.</li>
-  </ul>
-
+<!-- DIAGNÓSTICO -->
+<section id="diagnosticoSection" class="py-20 px-6 bg-black min-h-screen flex items-center" style="display: none;">
+  <div class="max-w-4xl mx-auto text-center">
+    <div id="diagnosticoContent" class="animate-fadeInUp">
+      <i class="fas fa-brain text-yellow-500 text-5xl mb-6"></i>
+      <h2 class="text-3xl md:text-4xl font-bold mb-6">Diagnóstico <span class="text-yellow-500">Personalizado</span></h2>
+      
+      <div class="grid md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white/5 p-4 rounded-xl"><p class="text-gray-400 text-sm">Disciplina</p><p class="text-2xl font-bold text-yellow-500" id="scoreDisciplina">0%</p></div>
+        <div class="bg-white/5 p-4 rounded-xl"><p class="text-gray-400 text-sm">Clareza Mental</p><p class="text-2xl font-bold text-yellow-500" id="scoreClareza">0%</p></div>
+        <div class="bg-white/5 p-4 rounded-xl"><p class="text-gray-400 text-sm">Consistência</p><p class="text-2xl font-bold text-yellow-500" id="scoreConsistencia">0%</p></div>
+      </div>
+      
+      <div class="radar-container mb-8">
+        <canvas id="radarChart" width="400" height="400" style="max-width: 100%; height: auto;"></canvas>
+      </div>
+      
+      <div id="diagnosticoText" class="text-gray-300 text-left space-y-4 mb-8"></div>
+      
+      <div class="mt-8 p-6 bg-gradient-to-r from-yellow-600/20 to-transparent rounded-2xl border-l-4 border-yellow-500">
+        <p class="text-yellow-400 text-xl font-semibold mb-2">✨ A boa notícia é que isso pode ser mudado. ✨</p>
+        <p class="text-gray-300">Estás a um passo de transformar a tua realidade.</p>
+      </div>
+      
+      <button id="obterSolucaoBtn" class="mt-10 bg-yellow-500 text-black px-8 py-4 rounded-full font-bold text-lg hover:scale-105 transition btn-glow">🔥 OBTER SOLUÇÃO AGORA <i class="fas fa-arrow-right ml-2"></i></button>
+    </div>
+  </div>
 </section>
-<!-- TERMOS DE USO E SUPORTE -->
-<section class="p-10 text-gray-400 text-sm max-w-3xl mx-auto">
-  <h2 class="text-xl font-bold text-white mb-4">Termos de Uso</h2>
-  <p>
-    Este produto é um conteúdo educativo digital. Não garantimos resultados específicos, pois dependem da aplicação individual do utilizador. O material não pode ser revendido ou distribuído sem autorização. Ao adquirir, concorda com os nossos termos de uso e política de privacidade.
-  </p>
-  
+
+<!-- CHECKOUT COM CRONÔMETRO DE 5 MINUTOS -->
+<section id="checkoutSection" class="py-20 px-6 bg-gradient-to-b from-gray-900 to-black min-h-screen flex items-center" style="display: none;">
+  <div class="max-w-md mx-auto w-full">
+    <div class="text-center mb-8">
+      <div class="timer-circle countdown-timer">
+        <div class="text-center">
+          <span id="countdownDisplay" class="text-3xl font-bold text-yellow-500">05:00</span>
+        </div>
+      </div>
+      <i class="fas fa-crown text-yellow-500 text-4xl mb-4"></i>
+      <h2 class="text-3xl font-bold">Último passo</h2>
+      <p class="text-gray-400 mt-2">⚠️ Oferta especial expira em <span id="countdownWarning" class="text-yellow-500 font-bold">5 minutos</span>!</p>
+      <p class="text-gray-500 text-sm mt-1">Preenche os dados abaixo para teres acesso imediato</p>
+    </div>
+    
+    <div class="bg-white/5 rounded-2xl p-8 border border-yellow-500/20">
+      <div class="text-center mb-6">
+        <p class="text-4xl font-bold text-yellow-500">187 MZN</p>
+        <p class="text-sm text-gray-400 line-through">349 MZN</p>
+        <p class="text-green-400 mt-2">✓ Acesso vitalício</p>
+        <p class="text-green-400">✓ Entrega imediata</p>
+      </div>
+      
+      <form id="checkoutForm">
+        <input type="text" id="nomeCompleto" placeholder="Seu nome" class="w-full p-3 rounded-xl mb-3 text-white" required>
+        <!-- <input type="email" id="emailCliente" placeholder="Email" class="w-full p-3 rounded-xl mb-3 text-white" required>
+        <input type="tel" id="whatsappCliente" placeholder="WhatsApp (incluindo código)" class="w-full p-3 rounded-xl mb-4 text-white" required> -->
+        <a href="https://site.eupay.shop/checkouts/checkout-page-2-7dias/">
+          <button type="button" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-bold text-lg hover:scale-105 transition">FINALIZAR ACESSO</button>
+        </a>
+      </form>
+      
+      <div class="flex justify-center gap-4 mt-6 text-xs text-gray-500">
+        <span><i class="fas fa-lock"></i> Pagamento Seguro</span>
+        <span><i class="fas fa-clock"></i> Acesso Imediato</span>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="text-center p-6 border-t border-gray-800">
-  <p class="text-gray-500">© 2026 Transformação Real • Todos os direitos reservados</p>
+<!-- RODAPÉ COM POLÍTICAS CLICÁVEIS -->
+<footer class="bg-black border-t border-gray-800 py-12 px-6">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-8 text-sm text-gray-400">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 bg-gradient-to-br from-yellow-600 to-yellow-400 rounded-lg flex items-center justify-center"><span class="text-black font-bold text-sm">EUT</span></div>
+        <span class="font-bold text-white">EUT</span>
+      </div>
+      <p>Clareza. Disciplina. Evolução.</p>
+      <p class="mt-2">© 2026 • Todos os direitos reservados</p>
+    </div>
+    
+    <div id="politicas">
+      <h4 class="text-white font-bold mb-3">Políticas</h4>
+      <p class="cursor-pointer hover:text-yellow-500 transition" onclick="openModal('modalPrivacidade')">📋 Política de Privacidade</p>
+      <p class="mt-2 cursor-pointer hover:text-yellow-500 transition" onclick="openModal('modalTermos')">📜 Termos de Uso</p>
+      <p class="mt-2 cursor-pointer hover:text-yellow-500 transition" onclick="openModal('modalReembolso')">💰 Política de Reembolso</p>
+    </div>
+    
+    <div id="contato">
+      <h4 class="text-white font-bold mb-3">Contacto</h4>
+      <p>📧 suporte.transformacao7dias@gmail.com</p>
+      <p class="mt-2">📱 +258 85 533 2692 (Suporte)</p>
+    </div>
+    
+    <div id="garantia">
+      <h4 class="text-white font-bold mb-3">Garantia</h4>
+      <p>🔒 Compra 100% segura</p>
+      <p>💵 Reembolso em até 7 dias</p>
+      <p>⚡ Entrega imediata</p>
+    </div>
+  </div>
 </footer>
 
-<!-- TIMER -->
 <script>
-let time = 1800;
-const timer = document.getElementById('timer');
-
-setInterval(() => {
-  let minutes = Math.floor(time / 60);
-  let seconds = time % 60;
-  seconds = seconds < 10 ? '0' + seconds : seconds;
-  timer.innerHTML = "Oferta expira em: " + minutes + ":" + seconds;
-  if (time > 0) time--;
-}, 1000);
+  // Funções dos modais
+  function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  
+  function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+  
+  window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+      event.target.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    }
+  }
+  
+  // Variáveis do quiz
+  let userAnswers = { q1: null, q2: null, q3: null, q4: null, q5: null, q6: null, q7: null };
+  let currentStep = 1;
+  const totalSteps = 7;
+  
+  function updateProgress() { 
+    const percent = (currentStep / totalSteps) * 100; 
+    document.getElementById('progressFill').style.width = percent + '%'; 
+    document.getElementById('progressPercent').innerText = Math.round(percent) + '%'; 
+  }
+  
+  function showFeedback(msg) { 
+    const fb = document.getElementById('feedbackMessage'); 
+    document.getElementById('feedbackText').innerText = msg; 
+    fb.classList.remove('hidden'); 
+    setTimeout(() => fb.classList.add('hidden'), 2000); 
+  }
+  
+  function goToStep(step) { 
+    document.querySelectorAll('.quiz-step').forEach((el, idx) => { 
+      el.classList.remove('active'); 
+      if(idx + 1 === step) el.classList.add('active'); 
+    }); 
+    currentStep = step; 
+    updateProgress(); 
+  }
+  
+  // Eventos das opções
+  document.querySelectorAll('#step1 .option-card, #step2 .option-card, #step3 .option-card, #step6 .option-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let step = currentStep;
+      let val = btn.getAttribute('data-value');
+      if(step === 1) userAnswers.q1 = val;
+      if(step === 2) userAnswers.q2 = val;
+      if(step === 3) userAnswers.q3 = val;
+      if(step === 6) userAnswers.q6 = val;
+      showFeedback("A analisar tua resposta...");
+      setTimeout(() => { 
+        if(step < 7 && step !== 4 && step !== 5) goToStep(step + 1); 
+      }, 1500);
+    });
+  });
+  
+  document.getElementById('submitSecretBtn')?.addEventListener('click', () => {
+    let val = document.getElementById('secretAnswer').value.trim();
+    if(!val) { showFeedback("Escreve algo honesto..."); return; }
+    userAnswers.q4 = val;
+    showFeedback("Obrigado pela honestidade.");
+    setTimeout(() => goToStep(5), 1500);
+  });
+  
+  document.getElementById('submitFearBtn')?.addEventListener('click', () => {
+    let val = document.getElementById('fearAnswer').value.trim();
+    if(!val) { showFeedback("Partilha o teu medo..."); return; }
+    userAnswers.q5 = val;
+    showFeedback("Reconhecer o medo é o primeiro passo.");
+    setTimeout(() => goToStep(6), 1500);
+  });
+  
+  document.getElementById('startQuizBtn')?.addEventListener('click', () => {
+    document.getElementById('hero').style.display = 'none';
+    document.getElementById('quizSection').style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  
+  function finishQuiz() {
+    document.getElementById('analyzingScreen').style.display = 'flex';
+    document.getElementById('quizSection').style.display = 'none';
+    
+    setTimeout(() => {
+      document.getElementById('analyzingScreen').style.display = 'none';
+      document.getElementById('diagnosticoSection').style.display = 'flex';
+      generateDiagnostic();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 3000);
+  }
+  
+  document.querySelectorAll('#step7 .option-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let val = btn.getAttribute('data-value');
+      userAnswers.q7 = val;
+      showFeedback("A analisar...");
+      setTimeout(() => finishQuiz(), 1500);
+    });
+  });
+  
+  // Botão OBTER SOLUÇÃO - redireciona para o checkout
+  document.getElementById('obterSolucaoBtn')?.addEventListener('click', () => {
+    document.getElementById('diagnosticoSection').style.display = 'none';
+    document.getElementById('checkoutSection').style.display = 'flex';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    startCountdown();
+  });
+  
+  // Cronômetro de 5 minutos (300 segundos)
+  let countdownInterval;
+  let timeLeft = 300;
+  
+  function startCountdown() {
+    const countdownDisplay = document.getElementById('countdownDisplay');
+    const countdownWarning = document.getElementById('countdownWarning');
+    
+    if (countdownInterval) clearInterval(countdownInterval);
+    timeLeft = 300;
+    updateDisplay();
+    
+    countdownInterval = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(countdownInterval);
+        countdownDisplay.innerHTML = "00:00";
+        countdownWarning.innerHTML = "EXPIRADA!";
+        countdownWarning.classList.add('text-red-500');
+        countdownWarning.classList.remove('text-yellow-500');
+      } else {
+        timeLeft--;
+        updateDisplay();
+      }
+    }, 1000);
+  }
+  
+  function updateDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const display = document.getElementById('countdownDisplay');
+    const warning = document.getElementById('countdownWarning');
+    
+    if (display) {
+      display.innerHTML = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    if (warning) {
+      warning.innerHTML = `${minutes} minuto${minutes !== 1 ? 's' : ''}`;
+      
+      if (timeLeft <= 60) {
+        warning.classList.add('text-red-500');
+        warning.classList.remove('text-yellow-500');
+      }
+    }
+  }
+  
+  function generateDiagnostic() {
+    let scores = { 
+      disciplina: Math.floor(Math.random() * 45) + 20, 
+      clareza: Math.floor(Math.random() * 40) + 15, 
+      consistencia: Math.floor(Math.random() * 35) + 15 
+    };
+    document.getElementById('scoreDisciplina').innerText = scores.disciplina + '%';
+    document.getElementById('scoreClareza').innerText = scores.clareza + '%';
+    document.getElementById('scoreConsistencia').innerText = scores.consistencia + '%';
+    
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    new Chart(ctx, { 
+      type: 'radar', 
+      data: { 
+        labels: ['Disciplina', 'Clareza', 'Consistência', 'Motivação', 'Foco'], 
+        datasets: [{ 
+          label: 'Teu perfil', 
+          data: [scores.disciplina, scores.clareza, scores.consistencia, 45, 38], 
+          backgroundColor: 'rgba(212, 175, 55, 0.2)', 
+          borderColor: '#d4af37', 
+          borderWidth: 2, 
+          pointBackgroundColor: '#d4af37' 
+        }] 
+      }, 
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: true, 
+        scales: { r: { beginAtZero: true, max: 100, grid: { color: '#333' }, ticks: { color: '#888' } } } 
+      } 
+    });
+    
+    let diagHtml = `<div><h4 class="text-yellow-500 font-bold">🔍 PROBLEMA IDENTIFICADO</h4><p>Com base nas tuas respostas, o teu maior bloqueio atual está na falta de consistência e direção clara.</p></div>
+    <div><h4 class="text-yellow-500 font-bold mt-4">⚡ CAUSA PRINCIPAL</h4><p>Ciclos repetitivos de procrastinação e ausência de um sistema que te obrigue a agir diariamente.</p></div>
+    <div><h4 class="text-yellow-500 font-bold mt-4">🎯 SOLUÇÃO PROPOSTA</h4><p>Implementar um plano de 7 dias focado em micro-hábitos e reestruturação mental.</p></div>`;
+    document.getElementById('diagnosticoText').innerHTML = diagHtml;
+  }
+  
+  // Partículas
+  function createParticles() {
+    const container = document.getElementById('particles');
+    if (!container) return;
+    for(let i = 0; i < 50; i++) {
+      let particle = document.createElement('div');
+      particle.classList.add('particle');
+      particle.style.width = Math.random() * 4 + 2 + 'px';
+      particle.style.height = particle.style.width;
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.animationDuration = Math.random() * 10 + 5 + 's';
+      particle.style.animationDelay = Math.random() * 5 + 's';
+      container.appendChild(particle);
+    }
+  }
+  createParticles();
 </script>
-
-<!-- WHATSAPP FLUTUANTE -->
-<a href="https://wa.me/258855332692?text=Ol%C3%A1%2C%20quero%20saber%20mais%20sobre%20o%20guia%21" 
-   class="whatsapp-float" 
-   target="_blank" 
-   rel="noopener noreferrer"
-   aria-label="Conversar no WhatsApp">
-  <i class="fab fa-whatsapp"></i>
-</a>
-
 </body>
 </html>
